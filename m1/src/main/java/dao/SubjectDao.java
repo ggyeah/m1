@@ -51,42 +51,82 @@ public class SubjectDao {
 			return row;
 		}
 		//3) 과목삭제
-		public int delectSubject(int subjectNo) throws Exception {
-			int row = 0;
+		public int deleteSubject(int subjectNo) throws Exception {
 			DBUtil dbUtil = new DBUtil();
 			Connection conn = dbUtil.getConnection();
-			//preparedStatement
+			
+			PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM subject WHERE subject_no = ?");
+		    deleteStmt.setInt(1, subjectNo);
+		    
+		    int row = deleteStmt.executeUpdate();
+		    
+		    if (row == 1){
+				System.out.println(row + " <- 강사 삭제성공");
+			} else {
+				System.out.println(row + " <- 강사 삭제실패");
+			}
 			return row;
 		}
 	
 		//4) 과목수정
 		public int updateSubject(Subject subject) throws Exception {
-			int row = 0;
 			DBUtil dbUtil = new DBUtil();
 			Connection conn = dbUtil.getConnection();
-			// PreparedStatement
-			return row; 
-		}
+			
+			PreparedStatement updateStmt = conn.prepareStatement("UPDATE subject SET subject_name = ?, subject_time = ?, updatedate = now() WHERE subject_no = ?");
+			    updateStmt.setString(1, subject.getSubjectName());
+			    updateStmt.setInt(2, subject.getSubjectTime());
+			    updateStmt.setInt(3, subject.getSubjectNo());
+				
+				//영향받은 행값
+				int row = updateStmt.executeUpdate();
+					
+				if(row == 1) {
+					System.out.println(row + " <- 수정성공");
+				} else {
+					System.out.println(row + " <- 수정실패");
+					}
+				return row;
+			
+			}
 		
 		//5) 과목하나 상세
 		public Subject selectSubjectOne(int subjectNo) throws Exception {
-			Subject subject = null;
 			DBUtil dbUtil = new DBUtil();
 			Connection conn = dbUtil.getConnection();
-			//preparedStatement
-			//ResultSet
+			PreparedStatement subjectrOneStmt = conn.prepareStatement("select subject_no, subject_name, subject_time, updatedate, createdate  from subject where subject_no = ?");
+			subjectrOneStmt.setInt(1, subjectNo);
+		    
+		    ResultSet subjectrOneRs = subjectrOneStmt.executeQuery();
+		    
+		    Subject subject = null;
+		    
+		    if(subjectrOneRs.next()) {
+		    subject = new Subject();
+		    subject.setSubjectNo(subjectrOneRs.getInt("subject_no"));
+		    subject.setSubjectName(subjectrOneRs.getString("subject_name"));
+		    subject.setSubjectTime(subjectrOneRs.getInt("subject_time"));
+	    	 subject.setCreatedate(subjectrOneRs.getString("createdate"));
+	    	 subject.setUpdatedate(subjectrOneRs.getString("updatedate"));
+			}
+		
 			return subject;
 		}
 		
 		//6) 과목전체 row
 		public int selectSubhectCnt() throws Exception{
-			int row = 0;
+			int totalrow = 0;
 			DBUtil dbUtil = new DBUtil();
 			
 			Connection conn = dbUtil.getConnection();
-			//preparedStatement
-			//ResultSet
-			return row;
+			String totalrowsql = "SELECT COUNT(*) FROM subject";
+			PreparedStatement totalrowstmt = conn.prepareStatement(totalrowsql);
+			ResultSet totalrowrs = totalrowstmt.executeQuery();
+			
+			if(totalrowrs.next()) {
+				totalrow = totalrowrs.getInt("COUNT(*)");
+			}
+			return totalrow;
+			}
 			
 		}
-}
